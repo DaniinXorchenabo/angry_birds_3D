@@ -18,7 +18,7 @@ public class BeforeFlyPreparation : MonoBehaviour
     private Vector3 spase_progress;
 
     // private float radians_setup_right = 0.2f;
-    private static float max_radians_right = 10.0f;
+    private static float max_radians_right = 30.0f;
     private float right_radians_progress;
 
 
