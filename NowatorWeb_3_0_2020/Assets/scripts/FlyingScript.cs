@@ -13,6 +13,7 @@ public class FlyingScript : MonoBehaviour
     private float script_start_time;
     public Transform A_point_transform;
     public Transform B_point_transform;
+    public GameObject Cam;
 
     private Vector3 A_point;
     private Vector3 a = new Vector3(0.0f, 0.0f, 0.0f); // ускарение
@@ -24,11 +25,17 @@ public class FlyingScript : MonoBehaviour
     public float stiffness_coefficient;  // коэффициент жесткости
     private Vector3 CM_vector;
     private Vector3 start_local_position;
+    private bool flag1 = true;
+    private bool flag = true;
+    private CameraController2 camScr;
+
 
 
     void Awake(){
         AB_vector = B_point_transform.localPosition - A_point_transform.localPosition;
         AB_len = AB_vector.magnitude;
+        camScr = Cam.GetComponent<CameraController2>();
+        camScr.enabled = false;
 
     }
 
@@ -50,6 +57,7 @@ public class FlyingScript : MonoBehaviour
     // Start is called before the first frame update
     void OnEnable(){
         _rb.isKinematic = false;
+        _rb.useGravity = false;
 
         CA_vector = A_point_transform.localPosition - my_tr.localPosition;
         CA_len = CA_vector.magnitude;
@@ -57,9 +65,13 @@ public class FlyingScript : MonoBehaviour
         powerfull = 0.0f;
         CM_vector =  (B_point_transform.localPosition + A_point_transform.localPosition)/2 - my_tr.localPosition;
         start_local_position = my_tr.localPosition;
+        flag1 = true;
+        flag = true;
+        camScr.enabled = true;
     }
     void Start()
     {
+        
         
     }
     void FixedUpdate(){
@@ -67,17 +79,21 @@ public class FlyingScript : MonoBehaviour
     }
 
     void PowerControl(){
-        if (counter == 0){
+        if (flag){
             script_start_time = (float)Time.realtimeSinceStartup;
+            flag = false;
         }
         if ((start_center_point - my_tr.localPosition).x <= 0.0f){
             Vector3 forse = Vector3.Scale(generateForse(), new Vector3(1.0f, -1.0f, 1.0f));
             // print("forse" + forse.ToString());
             // _rb.AddRelativeForce(forse);
              _rb.AddForce(-forse);
+        } else {
+            if (flag1){
+                 _rb.useGravity = true;
+                 flag1 = false;
+            }
         }
-        counter++;
-
     }
      Vector3 generateForse(){
         float time = (float)Time.realtimeSinceStartup - script_start_time;
@@ -98,7 +114,7 @@ public class FlyingScript : MonoBehaviour
         // Vector3 a2 = Vector3.Scale(new_MC, local_CB)/local_CB.magnitude;
         Vector3 a2 = Vector3.Project(local_CB, new_MC);
         a = (a1 + a2) * stiffness_coefficient / my_mass;
-        print(new_MC.ToString()  + local_CA.ToString() + a1.ToString() + local_CB.ToString() + a2.ToString()+(a1 + a2).ToString());
+        // print(new_MC.ToString()  + local_CA.ToString() + a1.ToString() + local_CB.ToString() + a2.ToString()+(a1 + a2).ToString());
         // print(a.ToString()  + a1.ToString() + a2.ToString());
 
 

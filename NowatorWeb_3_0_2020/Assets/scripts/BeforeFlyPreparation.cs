@@ -10,6 +10,7 @@ public class BeforeFlyPreparation : MonoBehaviour
     private Rigidbody _rb;
     public Transform centerRotatePoint;
     public Transform maxBackPoint;
+    [HideInInspector]
     public Transform my_Trans;
     private Vector3 maxDistanse;
     // private Vector3 dlobal_radius = Vector3.zero;
