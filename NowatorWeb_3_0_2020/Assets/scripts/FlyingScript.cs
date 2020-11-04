@@ -11,8 +11,8 @@ public class FlyingScript : MonoBehaviour
     private float powerfull = 0.0f;
     private int counter = 0;
     private float script_start_time;
-    public Transform A_point_transform;
-    public Transform B_point_transform;
+    private Transform A_point_transform;
+    private Transform B_point_transform;
     public GameObject Cam;
 
     private Vector3 A_point;
@@ -29,36 +29,33 @@ public class FlyingScript : MonoBehaviour
     private bool flag = true;
     private CameraController2 camScr;
 
-
-
     void Awake(){
-        AB_vector = B_point_transform.localPosition - A_point_transform.localPosition;
-        AB_len = AB_vector.magnitude;
+        Cam.transform.parent = transform;
         camScr = Cam.GetComponent<CameraController2>();
         camScr.enabled = false;
-
     }
-
-
 
     public void init_param(Transform my_trans,
                     Rigidbody my_rb,
                     Vector3 center_p,
-                    Vector3 distanse_v){
+                    Vector3 distanse_v,
+                    Transform A_point,
+                    Transform B_point){
         my_tr = my_trans;
         _rb = my_rb;
         start_center_point = center_p;
         flying_direction = distanse_v;
         my_mass = _rb.mass;
+        A_point_transform = A_point;
+        B_point_transform = B_point;
         my_tr.localPosition = (B_point_transform.localPosition + A_point_transform.localPosition)/2;
-
-
+        AB_vector = B_point_transform.localPosition - A_point_transform.localPosition;
+        AB_len = AB_vector.magnitude;
     }
-    // Start is called before the first frame update
+
     void OnEnable(){
         _rb.isKinematic = false;
         _rb.useGravity = false;
-
         CA_vector = A_point_transform.localPosition - my_tr.localPosition;
         CA_len = CA_vector.magnitude;
         a = new Vector3(0.0f, 0.0f, 0.0f);
@@ -69,11 +66,7 @@ public class FlyingScript : MonoBehaviour
         flag = true;
         camScr.enabled = true;
     }
-    void Start()
-    {
-        
-        
-    }
+
     void FixedUpdate(){
         PowerControl();
     }
@@ -84,7 +77,7 @@ public class FlyingScript : MonoBehaviour
             flag = false;
         }
         if ((start_center_point - my_tr.localPosition).x <= 0.0f){
-            Vector3 forse = Vector3.Scale(generateForse(), new Vector3(1.0f, -1.0f, 1.0f));
+            Vector3 forse = Vector3.Scale(generateForse(), new Vector3(-1.0f, -1.0f, -1.0f));
             // print("forse" + forse.ToString());
             // _rb.AddRelativeForce(forse);
              _rb.AddForce(-forse);
@@ -95,7 +88,8 @@ public class FlyingScript : MonoBehaviour
             }
         }
     }
-     Vector3 generateForse(){
+
+    Vector3 generateForse(){
         float time = (float)Time.realtimeSinceStartup - script_start_time;
         Vector3 s = a * time*time /2;
         // Vector3 local_CA =  A_point_transform.localPosition - ((B_point_transform.localPosition + A_point_transform.localPosition)/2 - CM_vector * ((CM_vector.magnitude - s.magnitude)/CM_vector.magnitude)) ;  // CA_vector * ((CA_len - s)/CA_len);
@@ -124,7 +118,7 @@ public class FlyingScript : MonoBehaviour
 
         // a = Vector3.Cross(a1, b1)/(my_mass * local_CA_len * (local_CA + AB_vector).magnitude);
         return a*my_mass;
-     }
+    }
 
 
 }

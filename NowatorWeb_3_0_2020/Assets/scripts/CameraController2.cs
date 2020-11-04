@@ -92,13 +92,13 @@ public class CameraController2 : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(target.position, transform.position - target.position, out hit, maxDistance_now, obstacles)){
             position = hit.point;
-            print("--ffff");
+            // print("--ffff");
         } else if (distance < maxDistance_now && ! Physics.Raycast(position, -transform.forward, .1f, obstacles)) {
             position = position - transform.forward * .05f;
-            print("--dddddd");
+            // print("--dddddd");
         } else {
-            print("maxDistance_now " + maxDistance_now);
-            print("distance " + distance);
+            // print("maxDistance_now " + maxDistance_now);
+            // print("distance " + distance);
         }
     }
     void PlayerReact(){}
