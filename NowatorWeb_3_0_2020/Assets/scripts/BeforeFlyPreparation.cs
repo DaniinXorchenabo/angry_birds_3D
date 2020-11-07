@@ -114,6 +114,9 @@ public class BeforeFlyPreparation : MonoBehaviour
                 // print(globalRotationUp);
             }
         }
+        // var enging_speed = Mathf.Sqrt((Vector3.Scale(-2*(centerRotatePoint.localPosition - transform.localPosition), (A_point_transform.localPosition + B_point_transform.localPosition - 2*transform.localPosition))/_rb.mass).magnitude);
+        // var end_time = 
+        // print(enging_speed);
     }
 
 }

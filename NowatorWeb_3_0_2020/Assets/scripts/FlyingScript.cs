@@ -28,6 +28,8 @@ public class FlyingScript : MonoBehaviour
     private bool flag1 = true;
     private bool flag = true;
     private CameraController2 camScr;
+    private float lastTime = 0f;
+    private Vector3 all_impuls = Vector3.zero;
 
     void Awake(){
         Cam.transform.parent = transform;
@@ -65,6 +67,11 @@ public class FlyingScript : MonoBehaviour
         flag1 = true;
         flag = true;
         camScr.enabled = true;
+        all_impuls = Vector3.zero;
+        lastTime = 0f;
+        // print("C point " + transform.localPosition.ToString());
+        // print("CM vector " + CM_vector.ToString());
+        // print("M point " + start_center_point.ToString());
     }
 
     void FixedUpdate(){
@@ -75,50 +82,131 @@ public class FlyingScript : MonoBehaviour
         if (flag){
             script_start_time = (float)Time.realtimeSinceStartup;
             flag = false;
+            // var l_CM = start_center_point- transform.localPosition;
+            // var l_CA = A_point_transform.localPosition - transform.localPosition;
+            // var l_CB = B_point_transform.localPosition - transform.localPosition;
+            // print(l_CM.ToString() + l_CA.ToString() + l_CB.ToString());
+            // var pr1_CA = Vector3.Scale(l_CM * 1000,  l_CA)/(l_CM * 1000).magnitude;
+            // var pr1_CB = Vector3.Scale(l_CM * 1000,  l_CB)/(l_CM * 1000).magnitude;
+            // var pr2_CA = Vector3.Project(l_CA, l_CM);
+            // var pr2_CB = Vector3.Project(l_CB, l_CM);
+            // print(pr1_CA.ToString() + pr2_CA.ToString() + pr1_CB.ToString()+pr2_CB.ToString());
+
         }
         if ((start_center_point - my_tr.localPosition).x <= 0.0f){
-            Vector3 forse = Vector3.Scale(generateForse(), new Vector3(-1.0f, -1.0f, -1.0f));
+            // Vector3 forse = Vector3.Scale(generateForse2(), new Vector3(1.0f, 1.0f, 1.0f));
             // print("forse" + forse.ToString());
             // _rb.AddRelativeForce(forse);
-             _rb.AddForce(-forse);
+            var impuls =  ImpulsGettingControl();
+            all_impuls += impuls;
+             _rb.AddForce(impuls, ForceMode.Impulse);
         } else {
             if (flag1){
+                // print("коэфициент" + (_rb.velocity.magnitude / (CM_vector * Mathf.Sqrt(2*stiffness_coefficient/my_mass)).magnitude).ToString());
+                
+                print("time " + ((float)Time.realtimeSinceStartup - script_start_time));
+
+                // print("скорости " + _rb.velocity.ToString() + "  " + all_impuls/my_mass + "  " + GetInpulsOnInterval(0f, (float)Time.realtimeSinceStartup - script_start_time)/my_mass);
+                // print("Расчетная скорость" + (CM_vector * Mathf.Sqrt(2*stiffness_coefficient/my_mass)).ToString());
+                // print("импульс " + all_impuls);
+                // print((_rb.velocity.magnitude/(CM_vector * Mathf.Sqrt(2*stiffness_coefficient/my_mass)).magnitude));
+                // print((2/stiffness_coefficient) + " " +  Mathf.Sqrt(1/stiffness_coefficient));
+
+                // pint("ускорения" + a.ToString() + ForseOnly2(((float)Time.realtimeSinceStartup - script_start_time), 0f).ToString());
+               
                  _rb.useGravity = true;
                  flag1 = false;
             }
         }
     }
 
+    // Vector3 SimpleA(float time){
+    //     return  2*CM_vector * (stiffness_coefficient/my_mass);
+    // }
+
+    // float ReturnSimpleT(){
+    //     return  Mathf.Sqrt(my_mass/stiffness_coefficient);
+    // }
+    // Vector3 GetSimpleImpuls(float deltaTime){
+    //     return SimpleA(deltaTime) * deltaTime *my_mass;
+    // }
+
+    // Vector3 GetA(float time){
+    //     return -2*stiffness_coefficient*CM_vector/(my_mass + stiffness_coefficient * time*time);
+    // }
+
+    // Vector3 GetDeltaA(float lastTime, float time){
+    //     return GetA(time) - GetA(lastTime);
+    // }
+    Vector3 GetSpeed(float time){
+        return -2 * CM_vector * Mathf.Sqrt(stiffness_coefficient) * Mathf.Atan(time*Mathf.Sqrt(stiffness_coefficient)/Mathf.Sqrt(my_mass))/Mathf.Sqrt(my_mass);
+    }
+    Vector3 GetDeltaSpeed(float lastTime, float time){
+        return GetSpeed(lastTime) -  GetSpeed(time);
+    }
+
+    Vector3 GetInpulsOnInterval(float lastTime, float time){
+        return GetDeltaSpeed(lastTime, time) * my_mass;
+    }
+
+    Vector3 ImpulsGettingControl(){
+        float time = (float)Time.realtimeSinceStartup - script_start_time;
+        var data = GetInpulsOnInterval(lastTime, time);
+        // var data = GetSimpleImpuls( time - lastTime);
+        lastTime = time;
+        return data;
+    }
+/*
     Vector3 generateForse(){
         float time = (float)Time.realtimeSinceStartup - script_start_time;
         Vector3 s = a * time*time /2;
-        // Vector3 local_CA =  A_point_transform.localPosition - ((B_point_transform.localPosition + A_point_transform.localPosition)/2 - CM_vector * ((CM_vector.magnitude - s.magnitude)/CM_vector.magnitude)) ;  // CA_vector * ((CA_len - s)/CA_len);
         Vector3 local_CA =  A_point_transform.localPosition - (start_local_position + s);
         float local_CA_len = local_CA.magnitude;
-        // print("local_CA" + local_CA.ToString());
-        // print("направление" + ((B_point_transform.localPosition + A_point_transform.localPosition)/2 - my_tr.localPosition).ToString());
-        // Vector3 a1 = stiffness_coefficient*(local_CA + AB_vector * 0.5f);
-        // Vector3 b1 = (local_CA + AB_vector).magnitude * local_CA + local_CA_len * (local_CA + AB_vector);
         Vector3 new_c_point = my_tr.localPosition;
         Vector3 new_MC = start_center_point - new_c_point;
-        // Vector3 a1 = Vector3.Scale(new_MC, local_CA)/local_CA_len;
         Vector3 a1 = Vector3.Project(local_CA, new_MC);
-
         Vector3 local_CB = local_CA - AB_vector;
-        // Vector3 a2 = Vector3.Scale(new_MC, local_CB)/local_CB.magnitude;
         Vector3 a2 = Vector3.Project(local_CB, new_MC);
         a = (a1 + a2) * stiffness_coefficient / my_mass;
-        // print(new_MC.ToString()  + local_CA.ToString() + a1.ToString() + local_CB.ToString() + a2.ToString()+(a1 + a2).ToString());
-        // print(a.ToString()  + a1.ToString() + a2.ToString());
-
-
-
-
-
-
-        // a = Vector3.Cross(a1, b1)/(my_mass * local_CA_len * (local_CA + AB_vector).magnitude);
         return a*my_mass;
     }
+
+    Vector3 generateForse2(){
+        float time = (float)Time.realtimeSinceStartup - script_start_time;
+        a += ForseOnly2(time, lastTime);
+        lastTime = time;
+        return a;
+    }
+    
+    public Vector3 ForseOnly(float time, float last_time){
+        var new_CM = CM_vector * (time - last_time) - a * (time*time*time - last_time*last_time*last_time)/6;
+        var new_CA = new_CM - AB_vector * (time - last_time) / 2;
+        var new_CB = new_CM + AB_vector * (time - last_time) / 2;
+        var a_setup = (Vector3.Project(new_CA, new_CM) + Vector3.Project(new_CB, new_CM)) * stiffness_coefficient / my_mass;
+        return a_setup;
+    }
+    public Vector3 ForseOnly2(float time, float last_time){
+        if (false && my_mass-stiffness_coefficient * last_time * last_time != 0f && time * last_time != 0){
+            // a += -start_center_point * Mathf.Log(Mathf.Pow(Mathf.Abs(my_mass-stiffness_coefficient * time * time), last_time)/Mathf.Pow(Mathf.Abs(my_mass-stiffness_coefficient * last_time * last_time), time))/(time * last_time);
+        }
+        var delta_a = Vector3.zero;
+        
+        delta_a = getSpeed(time) - getSpeed(last_time);
+
+        return delta_a * my_mass;
+    }
+
+    public Vector3 getSpeed(float time){
+        // var l_speed = -start_center_point * Mathf.Log(Mathf.Abs(my_mass-stiffness_coefficient * time * time))/time;
+        // var l_speed = -CM_vector * Mathf.Log(Mathf.Abs(my_mass + stiffness_coefficient * time * time))/time;
+        var l_speed = -2 * CM_vector * Mathf.Sqrt(stiffness_coefficient) * Mathf.Atan(time*Mathf.Sqrt(stiffness_coefficient)/Mathf.Sqrt(my_mass))/Mathf.Sqrt(my_mass);
+        return l_speed;
+    }
+
+    Vector3 generateForse3(){
+        float time = (float)Time.realtimeSinceStartup - script_start_time;
+        return a;
+    } */
 
 
 }
