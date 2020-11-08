@@ -44,6 +44,10 @@ public class BeforeFlyPreparation : MonoBehaviour
         my_Trans.position = centerRotatePoint.position;
         _rb = GetComponent<Rigidbody>();
         _rb.isKinematic = true;
+        if (_rb.mass == 0){
+            _rb.mass = 1f;
+            Debug.LogError("Масса не может быть равна нулю!");
+        }
 
         maxDistanse = maxBackPoint.localPosition - centerRotatePoint.localPosition;
 
