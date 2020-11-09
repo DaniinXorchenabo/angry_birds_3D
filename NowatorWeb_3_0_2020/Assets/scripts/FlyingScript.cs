@@ -11,8 +11,8 @@ public class FlyingScript : MonoBehaviour
     private float powerfull = 0.0f;
     private int counter = 0;
     private float script_start_time;
-    private Transform A_point_transform;
-    private Transform B_point_transform;
+    public Transform A_point_transform;
+    public Transform B_point_transform;
     public GameObject Cam;
 
     private Vector3 A_point;
@@ -30,11 +30,15 @@ public class FlyingScript : MonoBehaviour
     private CameraController2 camScr;
     private float lastTime = 0f;
     private Vector3 all_impuls = Vector3.zero;
+    private bool testingFlag = false;
+    private DistanceToTimeTranslaterScript distanceToTimeTranslaterScript;
+    
 
     void Awake(){
         Cam.transform.parent = transform;
         camScr = Cam.GetComponent<CameraController2>();
         camScr.enabled = false;
+        distanceToTimeTranslaterScript = GetComponent<DistanceToTimeTranslaterScript>();
     }
 
     public void init_param(Transform my_trans,
@@ -69,13 +73,37 @@ public class FlyingScript : MonoBehaviour
         camScr.enabled = true;
         all_impuls = Vector3.zero;
         lastTime = 0f;
+        distanceToTimeTranslaterScript.enabled = false;
         // print("C point " + transform.localPosition.ToString());
         // print("CM vector " + CM_vector.ToString());
         // print("M point " + start_center_point.ToString());
     }
 
     void FixedUpdate(){
-        PowerControl();
+        if (testingFlag){
+            TestPowerControl();
+        } else {
+             
+            PowerControl();
+        }
+
+    }
+    void Update(){
+        if (!testingFlag && flag1){
+            if ((start_center_point - my_tr.localPosition).x > 0.0f){
+                EndedForse();
+            }
+        }
+    }
+
+    public void SetWorkingFlag(bool newFlag){
+        testingFlag = newFlag;
+    }
+
+    void TestPowerControl(){
+        var impuls =  ImpulsGettingControl();
+        all_impuls += impuls;
+        _rb.AddForce(impuls, ForceMode.Impulse);
     }
 
     void PowerControl(){
@@ -93,31 +121,37 @@ public class FlyingScript : MonoBehaviour
             // print(pr1_CA.ToString() + pr2_CA.ToString() + pr1_CB.ToString()+pr2_CB.ToString());
 
         }
-        if ((start_center_point - my_tr.localPosition).x <= 0.0f){
+        if ((start_center_point - my_tr.localPosition).x < 0.0f){
             // Vector3 forse = Vector3.Scale(generateForse2(), new Vector3(1.0f, 1.0f, 1.0f));
             // print("forse" + forse.ToString());
             // _rb.AddRelativeForce(forse);
             var impuls =  ImpulsGettingControl();
             all_impuls += impuls;
-             _rb.AddForce(impuls, ForceMode.Impulse);
+            _rb.AddForce(impuls, ForceMode.Impulse);
         } else {
             if (flag1){
-                // print("коэфициент" + (_rb.velocity.magnitude / (CM_vector * Mathf.Sqrt(2*stiffness_coefficient/my_mass)).magnitude).ToString());
-                
-                print("time " + ((float)Time.realtimeSinceStartup - script_start_time));
-
-                // print("скорости " + _rb.velocity.ToString() + "  " + all_impuls/my_mass + "  " + GetInpulsOnInterval(0f, (float)Time.realtimeSinceStartup - script_start_time)/my_mass);
-                // print("Расчетная скорость" + (CM_vector * Mathf.Sqrt(2*stiffness_coefficient/my_mass)).ToString());
-                // print("импульс " + all_impuls);
-                // print((_rb.velocity.magnitude/(CM_vector * Mathf.Sqrt(2*stiffness_coefficient/my_mass)).magnitude));
-                // print((2/stiffness_coefficient) + " " +  Mathf.Sqrt(1/stiffness_coefficient));
-
-                // pint("ускорения" + a.ToString() + ForseOnly2(((float)Time.realtimeSinceStartup - script_start_time), 0f).ToString());
-               
-                 _rb.useGravity = true;
-                 flag1 = false;
+                EndedForse();
             }
         }
+    }
+
+    void EndedForse(){
+        // print("коэфициент" + (_rb.velocity.magnitude / (CM_vector * Mathf.Sqrt(2*stiffness_coefficient/my_mass)).magnitude).ToString());
+                
+        var timee = (float)Time.realtimeSinceStartup - script_start_time;
+        transform.localPosition = start_center_point;
+        _rb.velocity = -GetSpeed(distanceToTimeTranslaterScript.t2);
+        // print("time " + timee);
+        print(_rb.velocity.ToString() + "  " + GetSpeed(timee).ToString() + " " + GetSpeed(distanceToTimeTranslaterScript.t1).ToString() + " " + GetSpeed(distanceToTimeTranslaterScript.t2).ToString());                                     
+        // print("скорости " + _rb.velocity.ToString() + "  " + all_impuls/my_mass + "  " + GetInpulsOnInterval(0f, (float)Time.realtimeSinceStartup - script_start_time)/my_mass);
+        // print("Расчетная скорость" + (CM_vector * Mathf.Sqrt(2*stiffness_coefficient/my_mass)).ToString());
+        // print("импульс " + all_impuls);
+        // print((_rb.velocity.magnitude/(CM_vector * Mathf.Sqrt(2*stiffness_coefficient/my_mass)).magnitude));
+        // print((2/stiffness_coefficient) + " " +  Mathf.Sqrt(1/stiffness_coefficient));
+        // pint("ускорения" + a.ToString() + ForseOnly2(((float)Time.realtimeSinceStartup - script_start_time), 0f).ToString());
+        // print((start_center_point - my_tr.localPosition).ToString());               
+        _rb.useGravity = true;
+        flag1 = false;
     }
 
     // Vector3 SimpleA(float time){
@@ -207,6 +241,11 @@ public class FlyingScript : MonoBehaviour
         float time = (float)Time.realtimeSinceStartup - script_start_time;
         return a;
     } */
+    // void OnTriggerEnter(Collider collider) {
+    //     if (collider.gameObject.tag == "Center_point") {
+    //         print("-0-0-0-0-0-0-[0 " + (start_center_point - my_tr.localPosition).ToString());
+    //     }
+    // }
 
 
 }

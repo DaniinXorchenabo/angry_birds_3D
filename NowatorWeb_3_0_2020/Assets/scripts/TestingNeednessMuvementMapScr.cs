@@ -35,7 +35,9 @@ public class TestingNeednessMuvementMapScr : MonoBehaviour
             Debug.Log("Error!  " + e);
             Debug.Log("Подождите... Идёт попытка исправить...");
             gameObject.GetComponent<DictTimeDistanceCreater>().enabled = true;
+            player.gameObject.GetComponent<DistanceToTimeTranslaterScript>().enabled = false;
             Cam.SetActive(false);
+        
         }
     }
 

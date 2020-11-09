@@ -56,6 +56,7 @@ public class DictTimeDistanceCreater : MonoBehaviour
             if(!startTestFlag){
                 SetOnStartPosition();
                 startTest();
+                startTime = (float)Time.realtimeSinceStartup;
             }
             if(startTestFlag){
                 if ((startPlayerPosition - player.position).x >= 0.0f){
@@ -66,7 +67,7 @@ public class DictTimeDistanceCreater : MonoBehaviour
                     startTestFlag = false;
                     result += "{" + (Mathf.Round(nowStartDistance*100)/100).ToString().Replace(",", ".") + "f, " + (nowTime-startTime).ToString().Replace(",", ".") + "f}, ";
                 } else {
-                    print("Working");
+                    // print("Working");
                 }
 
             }
@@ -91,6 +92,7 @@ public class DictTimeDistanceCreater : MonoBehaviour
             startTime = (float)Time.realtimeSinceStartup;
             flyScr.enabled = true;
             player.gameObject.SetActive(true);
+            flyScr.SetWorkingFlag(true);
         } else {
             WorkingFlag = false;
             result += "";
